@@ -1,8 +1,2 @@
-database-service/
-frontend-service/
-mq-service/
-results_api-service/
-voting_api-service/
-worker-service/
 .idea/
 BW_test_exercise_cats_dogs_2021.pdf
