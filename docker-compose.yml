@@ -1,0 +1,103 @@
+version: "3.1"
+
+services:
+  vote-rest-api:
+    #image: "bitwebtestio/vote-rest-api-docker:latest"
+    build: "./voting_api-service"
+    container_name: "voting-rest-service"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+    networks:
+      - backend
+    environment:
+      - spring_rabbitmq_host=rmq3
+      - spring_rabbitmq_port=5672
+      - spring_rabbitmq_username=guest
+      - spring_rabbitmq_password=guest
+      - spring_rabbitmq_queue=vote.queue
+      - spring_rabbitmq_exchange=vote.exchange
+      - spring_rabbitmq_routingkey=vote.routingkey
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: "rmq3"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+
+  result-websocket-api:
+    build: "./results_api-service"
+    container_name: "websocket-service"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db
+    networks:
+      - backend
+    environment:
+      - app_datasource_jdbc_url=jdbc:postgresql://postgres:5432/bitwebtest_db
+      - app_datasource_username=postgres
+      - app_datasource_password=password
+      - app_datasource_pool-size=30
+
+  db:
+    image: postgres
+    container_name: postgres
+    restart: always
+    volumes:
+      - postgres_bitweb:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bitwebtest_db
+    networks:
+      - backend
+
+  worker-api:
+    build: "./worker-service"
+    ports:
+      - "51234:51234"
+    depends_on:
+      - rabbitmq
+      - db
+    networks:
+      - backend
+    environment:
+      - spring_rabbitmq_host=rmq3
+      - spring_rabbitmq_port=5672
+      - spring_rabbitmq_username=guest
+      - spring_rabbitmq_password=guest
+      - spring_rabbitmq_queue=vote.queue
+      - spring_rabbitmq_exchange=vote.exchange
+      - spring_rabbitmq_routingkey=vote.routingkey
+      - spring_datasource_jdbc_url=jdbc:postgresql://postgres:5432/bitwebtest_db
+      - spring_datasource_username=postgres
+      - spring_datasource_password=password
+      - spring_datasource_pool-size=30
+      - spring_jpa_hibernate_ddl-auto=create
+      - spring_jpa_properties_hibernate_dialect=org.hibernate.dialect.PostgreSQLDialect
+
+  frontend-react:
+    build: "./frontend-service"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - vote-rest-api
+      - result-websocket-api
+    networks:
+      - frontend
+    environment:
+      NODE_ENV: production
+
+networks:
+  backend:
+  frontend:
+
+volumes:
+  postgres_bitweb:
