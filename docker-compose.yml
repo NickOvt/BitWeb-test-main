@@ -2,8 +2,8 @@ version: "3.1"
 
 services:
   vote-rest-api:
-    #image: "bitwebtestio/vote-rest-api-docker:latest"
-    build: "./voting_api-service"
+    image: "nikolaiovt/bitwebtest_vote-rest-api:latest"
+    #build: "./voting_api-service"
     container_name: "voting-rest-service"
     ports:
       - "8080:8080"
@@ -30,7 +30,8 @@ services:
       - backend
 
   result-websocket-api:
-    build: "./results_api-service"
+    image: "nikolaiovt/bitwebtest_result-websocket-api:latest"
+    #build: "./results_api-service"
     container_name: "websocket-service"
     ports:
       - "8081:8081"
@@ -60,7 +61,8 @@ services:
       - backend
 
   worker-api:
-    build: "./worker-service"
+    image: "nikolaiovt/bitwebtest_worker-api:latest"
+    #build: "./worker-service"
     ports:
       - "51234:51234"
     depends_on:
@@ -84,7 +86,8 @@ services:
       - spring_jpa_properties_hibernate_dialect=org.hibernate.dialect.PostgreSQLDialect
 
   frontend-react:
-    build: "./frontend-service"
+    image: "nikolaiovt/bitwebtest_frontend-react:latest"
+    #build: "./frontend-service"
     ports:
       - "3000:3000"
     depends_on:
